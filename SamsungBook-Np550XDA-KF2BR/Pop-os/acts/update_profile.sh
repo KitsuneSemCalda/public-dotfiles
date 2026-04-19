@@ -257,6 +257,9 @@ DEV_ENV=(
     "GRADLE_OPTS=-Xmx2g -Dorg.gradle.daemon=true"
     
     # CMAKE
+    "CMAKE_GENERATOR=Ninja"
+)
+
 # =============================================================================
 # Apply Environment Variables (idempotent - no duplicates)
 # =============================================================================

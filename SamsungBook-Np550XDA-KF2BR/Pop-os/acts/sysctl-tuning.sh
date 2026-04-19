@@ -34,33 +34,8 @@ SYSCTL_CONFIG_LIST=(
     "fs.inotify.max_user_instances=1024"
 )
 
-# Apply sysctl settings
 for config in "${SYSCTL_CONFIG_LIST[@]}"; do
     sysctl -w "$config" 2>/dev/null || true
-done
-
-# =============================================================================
-# Kernel Module Parameters for Intel TigerLake (i5-1135G7)
-# =============================================================================
-
-KERNEL_PARAMS=(
-    # Intel iGPU (Iris Xe) optimizations
-    "i915.perf_stream_paranoid=0"
-    "i915.enable_guc=2"
-    "i915.enable_psr=1"
-    "i915.modeset=1"
-    "i915.enable_fbc=1"
-    
-    # Audio low-latency for Intel Smart Sound
-    "snd_hda_intel.dmic_detect=0"
-    
-    # NVMe optimizations
-    "nvme.core.io_timeout=4294967295"
-    "nvme.noacpi=1"
-)
-
-for param in "${KERNEL_PARAMS[@]}"; do
-    echo "$param" > /sys/module/${param%%=*}/parameters/${param#*=} 2>/dev/null || true
 done
 
 echo "✅ System optimization applied for Samsung 550XDA-KF2BR"
