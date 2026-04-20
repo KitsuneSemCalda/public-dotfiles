@@ -1,0 +1,228 @@
+# =============================================================================
+# Samsung 550XDA-KF2BR System-wide Optimization
+# Hardware: Intel i5-1135G7 (TigerLake) + 8GB RAM + Iris Xe Graphics
+# Optimized for: Gaming, Content Creation, Virtualization, Development
+# =============================================================================
+
+# =============================================================================
+# GPU - Intel Iris Xe Graphics (TigerLake)
+# =============================================================================
+MESA_VK_WSI_DEBUG=async
+MESA_SHADER_CACHE_MAX_SIZE=2G
+GALLIUM_DRIVER=iris
+RADV_PERFTEST=aco
+LIBVA_DRIVER_NAME=iHD
+GBM_BACKEND=i915
+ELECTRON_OZONE_PLATFORM_HINT=auto
+MESA_GL_VERSION_OVERRIDE=4.6
+MESA_GLSL_VERSION_OVERRIDE=460
+
+# Vulkan (Intel Xe)
+INTEL_VK_USE_OVERLAY=0
+RADV_PERFTEST=gpl
+VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
+
+# VA-API Hardware Acceleration
+VAAPI_VIDEO_DEC_DRIVER=i965
+FFMPEG_HW_ACCEL=vaapi
+VAAPI_DEVICE=/dev/dri/renderD128
+
+# =============================================================================
+# CPU - Intel i5-1135G7 (8 threads)
+# =============================================================================
+OMP_NUM_THREADS=8
+MKL_NUM_THREADS=8
+OPENBLAS_NUM_THREADS=8
+NUMEXPR_NUM_THREADS=8
+MAKEFLAGS=-j8
+CARGO_BUILD_JOBS=8
+
+# Compiler optimizations
+CFLAGS=-O3 -march=native -mtune=native -ffast-math -funroll-loops
+CXXFLAGS=-O3 -march=native -mtune=native -ffast-math -funroll-loops
+LDFLAGS=-Wl,-O3,--sort-common,--as-needed,-z,relro,-z,now
+
+# =============================================================================
+# Memory (8GB RAM + ZRAM)
+# =============================================================================
+MALLOC_CONF=metadata_thp:always,thp:default
+ZRAM_DISKSIZE=8G
+
+# =============================================================================
+# Gaming - Steam/Proton/DXVK/Lutris
+# =============================================================================
+STEAM_FRAME_FORCE_CLOSE=1
+STEAM_RUNTIME=/usr/lib/steam-runtime
+PROTON_USE_WINED3D=0
+PROTON_NO_ESYNC=0
+PROTON_NO_FSYNC=0
+DXVK_ASYNC=1
+DXVK_STATE_CACHE=1
+DXVK_LOG_LEVEL=none
+WINEDEBUG=-all
+
+# SDL2
+SDL_VIDEODRIVER=wayland,x11
+SDL_AUDIODRIVER=pulse
+SDL_GAMECONTROLLER_SENSITIVITY=100
+
+# Lutris
+LUTRIS_SKIP_INIT=1
+
+# GameMode
+LD_PRELOAD=libgamemodeauto.so.0
+
+# =============================================================================
+# Content Creation - Video/Audio/Image
+# =============================================================================
+
+# FFmpeg (VAAPI hardware encoding/decoding)
+FFMPEG_HW_ACCEL=vaapi
+VAAPI_DEVICE=/dev/dri/renderD128
+FFMPEG_THREADS=8
+
+# OBS Studio
+OBS_USE_EGL=1
+OBS_VK_DEVICE=0
+OBS_USE_WAYLAND=1
+
+# Blender
+BLENDER_CPU_DEVICE=CPU
+CYCLES_DEVICE=CPU
+CYCLES_NUM_THREADS=8
+
+# Audacity
+AUDACITY_SAMPLE_RATE=48000
+
+# GIMP
+GIMP_PLUG_IN_DIR=/usr/lib/gimp/2.0/plug-ins
+
+# DaVinci Resolve
+RESOLVE_CUDA_DEVICE_PREFIX=/dev/dri
+RESOLVE_OPENCL_DEVICE_PREFIX=/dev/dri
+
+# Kdenlive
+KDENLIVE_RENDER_THREADS=8
+
+# =============================================================================
+# Development - Rust/Go/Node.js/Python/Java/.NET
+# =============================================================================
+CMAKE_BUILD_PARALLEL_LEVEL=8
+ELECTRON_OZONE_PLATFORM_HINT=auto
+LIBVIRT_DEFAULT_URI="qemu:///system"
+
+# Rust
+RUSTFLAGS="-C target-cpu=native -C opt-level=3 -C lto=thin"
+RUSTUP_TOOLCHAIN=stable
+CARGO_INCREMENTAL=1
+
+# Go
+GOMAXPROCS=8
+GO111MODULE=on
+GOPROXY=https://proxy.golang.org,direct
+GOMEMLIMIT=6Gi
+GOGC=100
+
+# Node.js
+NODE_OPTIONS="--max-old-space-size=4096 --experimental-vm-modules"
+NODE_ENV=production
+
+# Python
+PYTHONDONTWRITEBYTECODE=1
+PYTHONMALLOC=default
+PYTHONTRACEMALLOC=0
+
+# Java
+_JAVA_OPTIONS="-Xmx4G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+AlwaysPreTouch"
+MAVEN_OPTS="-Xmx2g -XX:+UseG1GC"
+GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=true -Dorg.gradle.parallel=true"
+
+# .NET
+DOTNET_CLI_TELEMETRY_OPTOUT=1
+DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+
+# =============================================================================
+# Virtualization - Docker/QEMU/Podman
+# =============================================================================
+DOCKER_BUILDKIT=1
+COMPOSE_DOCKER_CLI_BUILD=1
+DOCKER_DEFAULT_PLATFORM=linux/amd64
+
+# QEMU/KVM
+QEMU_AUDIO_DRV=pa
+SPICE_USBREDIR_CHANNEL=true
+
+# Podman
+CONTAINER_MAX_MEMORY=6g
+CONTAINER_MAX_CPU=8
+
+# =============================================================================
+# Audio - PipeWire/PulseAudio
+# =============================================================================
+PIPEWIRE_LATENCY=128/48000
+PULSE_LATENCY_MSEC=20
+PULSE_PROP=filter.apply=0
+
+# ALSA
+ALSA_PCM_CARD=0
+ALSA_CTL_CARD=0
+
+# =============================================================================
+# Browsers - Firefox/Edge/Chromium
+# =============================================================================
+
+# Firefox
+MOZ_ENABLE_WAYLAND=1
+MOZ_DBUS_REMOTE=1
+MOZ_USE_GBM=1
+
+# Edge/Chromium (Electron)
+CHROMIUM_FLAGS=--enable-features=VaapiVideoDecoder,VaapiVideoEncoder,UseOzonePlatform --ozone-platform-hint=auto
+ELECTRON_OZONE_PLATFORM_HINT=auto
+
+# =============================================================================
+# System - Wayland/X11/IO/Network
+# =============================================================================
+WAYLAND_DEBUG=0
+XDG_CURRENT_DESKTOP=pop:GNOME
+XDG_SESSION_TYPE=wayland
+
+# TMP
+TMPDIR=/tmp
+TMPFS_SIZE=4G
+
+# Network (Wi-Fi 6 AX201)
+# Note: TCP BBR configured via sysctl
+
+# =============================================================================
+# Java - Wayland/X11 compatibility
+# =============================================================================
+_JAVA_AWT_WM_NONREPARENTING=1
+_AWT_TOOLKIT=MToolkit
+
+# =============================================================================
+# Git
+# =============================================================================
+GIT_LFS_SKIP_SMUDGE=1
+GIT_TERMINAL_PROMPT=1
+GIT_PAGER=cat
+
+# =============================================================================
+# NPM/Yarn/PNPM
+# =============================================================================
+npm_config_loglevel=warn
+YARN_ENABLE_MIRROR=1
+PNPM_HOME=$HOME/.local/share/pnpm
+
+# =============================================================================
+# Shell - Zsh/Bash
+# =============================================================================
+HISTFILE=$HOME/.history
+HISTSIZE=10000
+SAVEHIST=10000
+
+# =============================================================================
+# NVMe Storage Optimization
+# =============================================================================
+BLK_CGROUP_IOPRIO=low
+BLK_CGROUP_WEIGHT=100
