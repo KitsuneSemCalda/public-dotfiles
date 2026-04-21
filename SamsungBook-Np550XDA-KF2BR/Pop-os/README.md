@@ -47,7 +47,7 @@ Devido às limitações de **8GB de memória física** combinada a uma **Iris Xe
 - **ZRAM:** Compressão ativa trabalhando dinamicamente em até 7.5GB para dobrar virtualmente o espaço em memória rápida.
 
 ### 🎥 Criação de Conteúdo e Kdenlive (Intel Iris Xe)
-- **Kdenlive (Flatpak):** O pesado e antigo DaVinci Resolve foi substituído pelo Kdenlive (Flatpak). O Kdenlive consome drasticamente menos recursos. Ele utiliza a flag `MLT_MOVIT_HW_RENDER=1` para processar e renderizar efeitos visuais e cortes diretamente por hardware via OpenCL na Iris Xe.
+- **Kdenlive (Flatpak):** O DaVinci Resolve foi substituído pelo Kdenlive (Flatpak). O Kdenlive consome drasticamente menos recursos. Ele utiliza a flag `MLT_MOVIT_HW_RENDER=1` para processar e renderizar efeitos visuais e cortes diretamente por hardware via OpenCL na Iris Xe.
 - **VAAPI e FFmpeg:** Utilização dos drivers nativos `iHD` e `i965` (Intel) com aceleração transparente configurada por hardware (`FFMPEG_HW_ACCEL=vaapi`) para transcodificações em velocidade relâmpago.
 
 ### 🎮 Gaming e Vulkan
