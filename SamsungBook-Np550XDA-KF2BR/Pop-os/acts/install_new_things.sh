@@ -35,7 +35,7 @@ APT_PACKAGES=(
     i965-va-driver
     i965-va-driver-shaders
     vainfo                          # Verify VA-API support
-    vulkan-validation-layers        # For debugging Vulkan
+    vulkan-validationlayers         # For debugging Vulkan
     
     # ==== DEVELOPMENT TOOLS ====
     build-essential
@@ -65,8 +65,6 @@ APT_PACKAGES=(
     traceroute
     
     # ==== INTEL SPECIFIC TOOLS ====
-    intel-speed-select
-    intel-gpu-tools
     x11vnc
     
     # ==== THERMAL & HARDWARE ====
@@ -104,7 +102,6 @@ APT_PACKAGES=(
     
     # SDL2 for better game compatibility
     libsdl2-2.0-0
-    libsdl2-gpu-0
     libsdl2-mixer-2.0
     libsdl2-image-2.0
     libsdl2-ttf-2.0
@@ -116,25 +113,14 @@ APT_PACKAGES=(
     
     # ==== CONTENT CREATION ====
     # Video
-    obs-studio
     ffmpeg
     ffmpegthumbnailer
-    mpv
     
     # Audio
-    audacity
-    audacity-data
     pavucontrol          # PulseAudio volume control
     pipewire             # Modern audio server
     pipewire-pulse
     wireplumber
-    
-    # Image/3D
-    blender
-    gimp
-    inkscape
-    rawtherapee
-    darktable
     
     # ==== RUNTIME LIBRARIES ====
     # .NET
@@ -176,10 +162,18 @@ FLATPAK_PACKAGES=(
     "io.appflowy.AppFlowy"
     "org.gnome.Geary"
     
-    # ==== MEDIA ====
+    # ==== MEDIA / CONTENT CREATION ====
     "io.freetubeapp.FreeTube"
     "com.obsproject.Studio"
     "org.videolan.VLC"
+    "io.mpv.Mpv"
+    "org.audacityteam.Audacity"
+    "org.blender.Blender"
+    "org.gimp.GIMP"
+    "org.inkscape.Inkscape"
+    "com.rawtherapee.RawTherapee"
+    "org.darktable.Darktable"
+    "org.kde.kdenlive"
     
     # ==== GAMING ====
     "com.valvesoftware.Steam"
@@ -250,37 +244,4 @@ log_info "✅ Post-install configuration complete"
 upgrade_system
 upgrade_flatpak
 
-echo ""
-
-DAVINCI_ZIP="$HOME/Downloads/DaVinci_Resolve_*_Linux.zip"
-DAVINCI_RUN="$HOME/Downloads/DaVinci_Resolve_*_Linux.run"
-
-if [[ -f "$DAVINCI_ZIP" || -f "$DAVINCI_RUN" ]]; then
-    echo "=== Installing DaVinci Resolve ==="
-
-    sudo apt install -y fakeroot libglu1-mesa libssl3 ocl-icd-opencl-dev qtwayland5 xorriso
-
-    if [[ -f "$HOME/Downloads/DaVinci_Resolve.zip" ]]; then
-        unzip -o "$HOME/Downloads/DaVinci_Resolve.zip" -d "$HOME/Downloads/"
-    fi
-
-    cd "$HOME/Downloads"
-
-    if [[ -f "./makeresolvedeb*.sh" && -f "./DaVinci_Resolve_*_Linux.run" ]]; then
-        chmod +x ./makeresolvedeb*.sh
-        bash ./makeresolvedeb*.sh DaVinci_Resolve_*_Linux.run
-        sudo dpkg -i davinci-resolve*_amd64
-    elif [[ -f "./DaVinci_Resolve_*_Linux.run" ]]; then
-        chmod +x ./DaVinci_Resolve_*_Linux.run
-        sudo ./DaVinci_Resolve_*_Linux.run
-    fi
-
-    echo "✅ DaVinci Resolve installed"
-else
-    echo "=== DaVinci Resolve not found ==="
-    echo "Download from: https://www.blackmagic-design.com/products/davinciresolve"
-    echo "1. Download DaVinci Resolve Linux .zip"
-    echo "2. Download MakeResolveDeb script"
-    echo "3. Extract to ~/Downloads/"
-    echo "4. Run: sudo dpkg -i davinci-resolve*_amd64"
-fi
+echo "✅ All installations completed successfully"
