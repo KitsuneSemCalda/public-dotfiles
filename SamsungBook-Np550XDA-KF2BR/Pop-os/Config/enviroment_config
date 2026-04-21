@@ -10,7 +10,6 @@
 MESA_VK_WSI_DEBUG=async
 MESA_SHADER_CACHE_MAX_SIZE=2G
 GALLIUM_DRIVER=iris
-LIBVA_DRIVER_NAME=iHD
 ELECTRON_OZONE_PLATFORM_HINT=auto
 MESA_GL_VERSION_OVERRIDE=4.6
 MESA_GLSL_VERSION_OVERRIDE=460
@@ -21,9 +20,7 @@ ANV_ENABLE_PIPELINE_CACHE=1
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/intel_icd.x86_64.json
 
 # VA-API Hardware Acceleration
-VAAPI_VIDEO_DEC_DRIVER=i965
 FFMPEG_HW_ACCEL=vaapi
-VAAPI_DEVICE=/dev/dri/renderD128
 
 # =============================================================================
 # CPU - Intel i5-1135G7 (8 threads)

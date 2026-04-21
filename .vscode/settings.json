@@ -1,0 +1,6 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "dpkg": true,
+        "awk": true
+    }
+}

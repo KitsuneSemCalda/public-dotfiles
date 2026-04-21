@@ -115,7 +115,8 @@ APT_PACKAGES=(
     # Video
     ffmpeg
     ffmpegthumbnailer
-    
+    obs-studio
+
     # Audio
     pavucontrol          # PulseAudio volume control
     pipewire             # Modern audio server
@@ -140,6 +141,8 @@ APT_PACKAGES=(
     python3-pip
     python3-venv
 
+)
+
 FLATPAK_PACKAGES=(
     # ==== BROWSERS ====
     "com.microsoft.Edge"
@@ -152,9 +155,6 @@ FLATPAK_PACKAGES=(
     
     # ==== DEVELOPMENT ====
     "com.visualstudio.code"
-    "com.jetbrains.IntelliJ-IDEA-Community"
-    "com.jetbrains.WebStorm"
-    "org.python.PyCharm-Community"
     
     # ==== PRODUCTIVITY ====
     "org.onlyoffice.desktopeditors"
@@ -164,7 +164,6 @@ FLATPAK_PACKAGES=(
     
     # ==== MEDIA / CONTENT CREATION ====
     "io.freetubeapp.FreeTube"
-    "com.obsproject.Studio"
     "org.videolan.VLC"
     "io.mpv.Mpv"
     "org.audacityteam.Audacity"
