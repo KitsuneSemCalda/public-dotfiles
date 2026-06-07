@@ -1,0 +1,215 @@
+#!/bin/bash
+# Limpeza geral do sistema — Arch Linux / Omarchy
+# Uso: bash cleanup.sh [--aggressive]
+
+set -euo pipefail
+
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+info()  { echo -e "${GREEN}[✓]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[✗]${NC} $1"; }
+
+header() {
+    echo ""
+    echo "========================================"
+    echo "  $1"
+    echo "========================================"
+}
+
+AGGRESSIVE=false
+[[ "${1:-}" == "--aggressive" ]] && AGGRESSIVE=true
+
+OMARCHY_PATH="${OMARCHY_PATH:-$HOME/.local/share/omarchy}"
+
+# --------------------------------------------------
+# 1. PACMAN — cache de pacotes
+# --------------------------------------------------
+header "1. Cache do Pacman"
+if command -v paccache &>/dev/null; then
+    sudo paccache -r && info "Cache do pacman limpo (últimas 3 versões mantidas)"
+else
+    warn "paccache não encontrado. Instale com: sudo pacman -S pacman-contrib"
+fi
+
+# Remove diretórios temporários de download corrompidos
+sudo find /var/cache/pacman/pkg/ -maxdepth 1 -type d -name 'download-*' -exec rm -rf {} + 2>/dev/null
+info "Diretórios temporários de download removidos"
+
+# --------------------------------------------------
+# 2. PACOTES ORFÃOS
+# --------------------------------------------------
+header "2. Pacotes Orfãos"
+orphans=$(pacman -Qtdq 2>/dev/null || true)
+if [ -n "$orphans" ]; then
+    echo "  Removendo: $orphans"
+    sudo pacman -Rns --noconfirm $orphans && info "Pacotes orfãos removidos"
+else
+    info "Nenhum pacote orfão"
+fi
+
+# --------------------------------------------------
+# 3. AUR/YAY — cache de builds
+# --------------------------------------------------
+header "3. Cache de Builds AUR"
+if command -v yay &>/dev/null; then
+    yay -Sc --noconfirm 2>/dev/null && info "Cache yay limpo" || warn "yay -Sc falhou"
+fi
+if command -v paru &>/dev/null; then
+    paru -Sc --noconfirm 2>/dev/null && info "Cache paru limpo" || true
+fi
+rm -rf ~/.cache/yay/* 2>/dev/null && info "Cache yay (manual) limpo"
+rm -rf ~/.cache/paru/* 2>/dev/null && info "Cache paru (manual) limpo"
+
+# --------------------------------------------------
+# 4. SYSTEMD — logs antigos
+# --------------------------------------------------
+header "4. Logs do Systemd"
+sudo journalctl --vacuum-time=30d && info "Logs >30 dias removidos"
+sudo journalctl --vacuum-size=200M && info "Logs limitados a 200M"
+
+# --------------------------------------------------
+# 5. NPM — cache
+# --------------------------------------------------
+header "5. Cache npm"
+rm -rf ~/.npm/_cacache/ 2>/dev/null && info "Cache npm removido"
+npm cache clean --force 2>/dev/null && info "npm cache clean ok" || warn "npm cache clean falhou"
+
+# --------------------------------------------------
+# 6. PNPM — store
+# --------------------------------------------------
+header "6. Store pnpm"
+if command -v pnpm &>/dev/null; then
+    pnpm store prune 2>/dev/null && info "pnpm store limpo" || warn "pnpm store prune falhou"
+fi
+
+# --------------------------------------------------
+# 7. LIXEIRA
+# --------------------------------------------------
+header "7. Lixeira"
+rm -rf ~/.local/share/Trash/files/* 2>/dev/null && info "Lixeira esvaziada"
+rm -rf ~/.local/share/Trash/expunged/* 2>/dev/null
+
+# --------------------------------------------------
+# 8. FLATPAK — não usados
+# --------------------------------------------------
+header "8. Flatpaks Não Usados"
+if command -v flatpak &>/dev/null; then
+    flatpak uninstall --unused --noninteractive 2>/dev/null && info "Flatpaks não usados removidos" || warn "Nada a remover"
+fi
+
+# --------------------------------------------------
+# 9. CHROMIUM / navegadores — cache
+# --------------------------------------------------
+header "9. Cache de Navegadores"
+rm -rf ~/.cache/chromium/* 2>/dev/null && info "Cache Chromium limpo"
+rm -rf ~/.cache/google-chrome/* 2>/dev/null && info "Cache Chrome limpo"
+rm -rf ~/.cache/microsoft-edge/* 2>/dev/null && info "Cache Edge limpo"
+
+# --------------------------------------------------
+# 10. MISE — cache
+# --------------------------------------------------
+header "10. Cache Mise"
+if command -v mise &>/dev/null; then
+    mise cache clear 2>/dev/null && info "Cache mise limpo" || true
+fi
+
+# --------------------------------------------------
+# 11. OMARCHY — temas não usados + caches
+# --------------------------------------------------
+header "11. Omarchy"
+CURRENT_THEME=$(omarchy theme current 2>/dev/null || echo "")
+if [ -n "$CURRENT_THEME" ]; then
+    for theme in ~/.config/omarchy/themes/*/; do
+        name=$(basename "$theme")
+        if [ "$name" != "$CURRENT_THEME" ]; then
+            rm -rf "$theme"
+            info "Tema removido: $name"
+        fi
+    done
+fi
+for theme in ~/.config/omarchy/themes/*/; do
+    if [ -d "$theme/.git" ]; then
+        rm -rf "$theme/.git"
+        info ".git removido de $(basename "$theme")"
+    fi
+done
+
+# --------------------------------------------------
+# 12. SNAPPER / BTRFS — snapshots antigos e limpeza
+# --------------------------------------------------
+header "12. Snapshots Btrfs (Snapper)"
+if command -v snapper &>/dev/null && sudo snapper list-configs 2>/dev/null | grep -q "root"; then
+    # Aplica defaults Omarchy: manter só 5 snapshots, sem timeline
+    OMARCHY_SNAPPER_DEF="$OMARCHY_PATH/default/snapper/root"
+    if [ -f "$OMARCHY_SNAPPER_DEF" ]; then
+        sudo cp "$OMARCHY_SNAPPER_DEF" /etc/snapper/configs/root
+        info "Config snapper atualizada (NUMBER_LIMIT=5, TIMELINE_CREATE=no)"
+    fi
+
+    # Remove snapshots do tipo timeline (horários, diários, etc)
+    timeline=$(sudo snapper -c root list --columns number,cleanup 2>/dev/null | awk 'NR>2 && $3 == "timeline" {print $1}')
+    if [ -n "$timeline" ]; then
+        echo "$timeline" | xargs -r sudo snapper -c root delete 2>/dev/null
+        info "Snapshots timeline removidos"
+    else
+        info "Nenhum snapshot timeline encontrado"
+    fi
+
+    # Aplica o limite NUMBER_LIMIT=5
+    sudo snapper -c root cleanup number 2>/dev/null && info "Limite de 5 snapshots aplicado"
+
+    # Desativa quotas btrfs (evita lentidão)
+    sudo btrfs quota disable / 2>/dev/null && info "Btrfs quotas desativadas" || true
+else
+    warn "Snapper não configurado para /"
+fi
+
+# --------------------------------------------------
+# 13. BTRFS — reclaim & trim
+# --------------------------------------------------
+header "13. Reclaim Btrfs"
+sudo fstrim -v / && info "TRIM executado no SSD"
+sudo btrfs balance start -dusage=80 -musage=80 / && info "Chunks reclamados (>80% vagos)"
+
+# --------------------------------------------------
+# 14. GEÇOMI / NVM / RUSTUP — caches velhos
+# --------------------------------------------------
+header "14. Caches diversos"
+rm -rf ~/.cache/go-build/* 2>/dev/null
+rm -rf ~/.cache/gopls/* 2>/dev/null
+rm -rf ~/.cache/node-gyp/* 2>/dev/null
+rm -rf ~/.cache/pip/* 2>/dev/null
+info "Caches de build (go, node, pip) limpos"
+
+# --------------------------------------------------
+# 15. AGRESSIVO — limpeza pesada
+# --------------------------------------------------
+if $AGGRESSIVE; then
+    header "15. [AGGRESSIVO] Cache de Wallpapers Omarchy"
+    omarchy theme bg cache 2>/dev/null && info "Cache de backgrounds recriado" || true
+
+    header "16. [AGGRESSIVO] Modelos LM Studio não usados"
+    warn "Pule esta seção se usa LM Studio"
+    # LM Studio models ficam em ~/.lmstudio/models/ ou ~/lmstudio/
+    # Descomente se quiser remover:
+    # rm -rf ~/.lmstudio/models/* 2>/dev/null && info "Modelos LM Studio removidos"
+
+    header "17. [AGGRESSIVO] Balanceamento Btrfs"
+    warn "Pode levar vários minutos. Requer 10-20% de espaço livre."
+    if sudo btrfs balance start -dusage=50 -musage=50 / 2>/dev/null; then
+        info "Balanceamento btrfs concluído"
+    else
+        warn "Balanceamento falhou ou cancelado"
+    fi
+fi
+
+# --------------------------------------------------
+# 18. RESUMO
+# --------------------------------------------------
+header "Resumo do Espaço"
+AVAIL=$(df -h / | awk 'NR==2{print $4}')
+USED=$(df -h / | awk 'NR==2{print $3}')
+PCT=$(df -h / | awk 'NR==2{print $5}')
+echo "  Usado: $USED  /  Disponível: $AVAIL  (${PCT} usado)"
+echo ""
+echo -e "${GREEN}Limpeza concluída!${NC}"
